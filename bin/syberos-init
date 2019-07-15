@@ -14,7 +14,7 @@ program
   .parse(process.argv)
 
 const args = program.args
-const { template='default', description, name, css } = program
+const { template = 'default', description, name, css } = program
 let typescript
 
 /**

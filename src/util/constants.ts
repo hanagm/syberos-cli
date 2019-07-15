@@ -16,8 +16,8 @@ export const enum processTypeEnum {
 }
 
 export interface IProcessTypeMap {
-  [key: string] : {
-    name: string,
+  [key: string]: {
+    name: string
     color: string | Chalk
   }
 }
@@ -69,7 +69,15 @@ export const processTypeMap: IProcessTypeMap = {
   }
 }
 
-export const CSS_EXT: string[] = ['.css', '.scss', '.sass', '.less', '.styl', '.wxss', '.acss']
+export const CSS_EXT: string[] = [
+  '.css',
+  '.scss',
+  '.sass',
+  '.less',
+  '.styl',
+  '.wxss',
+  '.acss'
+]
 export const SCSS_EXT: string[] = ['.scss']
 export const JS_EXT: string[] = ['.js', '.jsx']
 export const TS_EXT: string[] = ['.ts', '.tsx']
@@ -92,13 +100,15 @@ export const NODE_MODULES_REG = /(.*)node_modules/
 
 export const enum BUILD_TYPES {
   DEVICE = 'device',
-  SIMULATOR ='simulator'
+  SIMULATOR = 'simulator'
 }
 
-/**支持的设备 */
-export const DEVICES={
-  device:'device',
-  simulator:'simulator'
+/**
+ * 支持的设备
+ */
+export const DEVICES = {
+  device: 'device',
+  simulator: 'simulator'
 }
 
 /**
@@ -106,59 +116,57 @@ export const DEVICES={
  */
 export const enum DEVICES_TYPES {
   DEVICE = 'device',
-  SIMULATOR ='simulator'
-};
-
+  SIMULATOR = 'simulator'
+}
 
 /**
  * 模拟器target name
  */
-export const TARGET_SIMULATOR_NAMES={
-  "target-i686-xuanwu":'target-i686-xuanwu',
-  "target-i686-main_dev":'target-i686-main_dev',
-  "target-i686-os2_1":'target-i686-os2_1'
+export const TARGET_SIMULATOR_NAMES = {
+  'target-i686-xuanwu': 'target-i686-xuanwu',
+  'target-i686-main_dev': 'target-i686-main_dev',
+  'target-i686-os2_1': 'target-i686-os2_1'
 }
-
-
 
 /**
  * 真机target name
  */
-export const TARGET_NAMES={
-  'target-armv7tnhl-xuanwu':'target-armv7tnhl-xuanwu',
-  'target-armv7tnhl-xuanwu_singleos_sc9860':'target-armv7tnhl-xuanwu_singleos_sc9860',
-  'target-armv7tnhl-os4_0':'target-armv7tnhl-os4_0',
-  'target-armv7tnhl-os_2_1_lts':'target-armv7tnhl-os_2_1_lts',
+export const TARGET_NAMES = {
+  'target-armv7tnhl-xuanwu': 'target-armv7tnhl-xuanwu',
+  'target-armv7tnhl-xuanwu_singleos_sc9860':
+    'target-armv7tnhl-xuanwu_singleos_sc9860',
+  'target-armv7tnhl-os4_0': 'target-armv7tnhl-os4_0',
+  'target-armv7tnhl-os_2_1_lts': 'target-armv7tnhl-os_2_1_lts'
 }
-
 
 /**
  * 模拟器target name
  */
-export const enum TARGET_SIMULATOR_NAME_TYPES{
-  "target-i686-xuanwu"='target-i686-xuanwu',
-  "target-i686-main_dev"='target-i686-main_dev',
-  "target-i686-os2_1"='target-i686-os2_1'
+export const enum TARGET_SIMULATOR_NAME_TYPES {
+  'target-i686-xuanwu' = 'target-i686-xuanwu',
+  'target-i686-main_dev' = 'target-i686-main_dev',
+  'target-i686-os2_1' = 'target-i686-os2_1'
 }
-
 
 /**
  * 真机target name
  */
-export const enum TARGET_NAME_TYPES{
-  'target-armv7tnhl-xuanwu'='target-armv7tnhl-xuanwu',
-  'target-armv7tnhl-xuanwu_singleos_sc9860'='target-armv7tnhl-xuanwu_singleos_sc9860',
-  'target-armv7tnhl-os4_0'='target-armv7tnhl-os4_0',
-  'target-armv7tnhl-os_2_1_lts'='target-armv7tnhl-os_2_1_lts',
+export const enum TARGET_NAME_TYPES {
+  'target-armv7tnhl-xuanwu' = 'target-armv7tnhl-xuanwu',
+  'target-armv7tnhl-xuanwu_singleos_sc9860' = 'target-armv7tnhl-xuanwu_singleos_sc9860',
+  'target-armv7tnhl-os4_0' = 'target-armv7tnhl-os4_0',
+  'target-armv7tnhl-os_2_1_lts' = 'target-armv7tnhl-os_2_1_lts'
 }
-
 
 export interface AppBuildConfig {
-  adapter: BUILD_TYPES,
-  target:DEVICES_TYPES,
-  watch?: boolean,
-  envHasBeenSet?: boolean,
-  port?: number,
+  /**
+   * 适配器
+   */
+  adapter: DEVICES_TYPES
+  target: any
+  debug?: boolean
+  envHasBeenSet?: boolean
+  port?: number
   release?: boolean
 }
 
@@ -199,9 +207,9 @@ export const enum CONFIG_TYPES {
 }
 
 export type IMINI_APP_FILE_TYPE = {
-  TEMPL: TEMPLATE_TYPES,
-  STYLE: STYLE_TYPES,
-  SCRIPT: SCRIPT_TYPES,
+  TEMPL: TEMPLATE_TYPES
+  STYLE: STYLE_TYPES
+  SCRIPT: SCRIPT_TYPES
   CONFIG: CONFIG_TYPES
 }
 

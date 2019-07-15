@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const chalk_1 = require("chalk");
 function build(appPath, buildConfig) {
+    console.log(chalk_1.default.bgRed(JSON.stringify(buildConfig)));
     const { type, debug, port } = buildConfig;
     switch (type) {
         case "device" /* DEVICE */:
@@ -16,7 +17,7 @@ function build(appPath, buildConfig) {
 }
 exports.default = build;
 function buildForDevice(appPath, { debug }) {
-    require('./build').build(appPath, {
+    require('./build/index').build(appPath, {
         debug,
         adapter: "device" /* DEVICE */
     });

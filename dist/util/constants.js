@@ -62,7 +62,15 @@ exports.processTypeMap = {
         color: 'blue'
     }
 };
-exports.CSS_EXT = ['.css', '.scss', '.sass', '.less', '.styl', '.wxss', '.acss'];
+exports.CSS_EXT = [
+    '.css',
+    '.scss',
+    '.sass',
+    '.less',
+    '.styl',
+    '.wxss',
+    '.acss'
+];
 exports.SCSS_EXT = ['.scss'];
 exports.JS_EXT = ['.js', '.jsx'];
 exports.TS_EXT = ['.ts', '.tsx'];
@@ -85,7 +93,9 @@ var BUILD_TYPES;
     BUILD_TYPES["DEVICE"] = "device";
     BUILD_TYPES["SIMULATOR"] = "simulator";
 })(BUILD_TYPES = exports.BUILD_TYPES || (exports.BUILD_TYPES = {}));
-/**支持的设备 */
+/**
+ * 支持的设备
+ */
 exports.DEVICES = {
     device: 'device',
     simulator: 'simulator'
@@ -98,14 +108,13 @@ var DEVICES_TYPES;
     DEVICES_TYPES["DEVICE"] = "device";
     DEVICES_TYPES["SIMULATOR"] = "simulator";
 })(DEVICES_TYPES = exports.DEVICES_TYPES || (exports.DEVICES_TYPES = {}));
-;
 /**
  * 模拟器target name
  */
 exports.TARGET_SIMULATOR_NAMES = {
-    "target-i686-xuanwu": 'target-i686-xuanwu',
-    "target-i686-main_dev": 'target-i686-main_dev',
-    "target-i686-os2_1": 'target-i686-os2_1'
+    'target-i686-xuanwu': 'target-i686-xuanwu',
+    'target-i686-main_dev': 'target-i686-main_dev',
+    'target-i686-os2_1': 'target-i686-os2_1'
 };
 /**
  * 真机target name
@@ -114,7 +123,7 @@ exports.TARGET_NAMES = {
     'target-armv7tnhl-xuanwu': 'target-armv7tnhl-xuanwu',
     'target-armv7tnhl-xuanwu_singleos_sc9860': 'target-armv7tnhl-xuanwu_singleos_sc9860',
     'target-armv7tnhl-os4_0': 'target-armv7tnhl-os4_0',
-    'target-armv7tnhl-os_2_1_lts': 'target-armv7tnhl-os_2_1_lts',
+    'target-armv7tnhl-os_2_1_lts': 'target-armv7tnhl-os_2_1_lts'
 };
 /**
  * 模拟器target name

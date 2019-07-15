@@ -605,6 +605,11 @@
   version "23.3.14"
   resolved "https://registry.npmjs.org/@types/jest/-/jest-23.3.14.tgz#37daaf78069e7948520474c87b80092ea912520a"
 
+"@types/joi@^14.3.3":
+  version "14.3.3"
+  resolved "https://registry.npm.taobao.org/@types/joi/download/@types/joi-14.3.3.tgz#f251aa8150fc0b6a7ce9feab21802a28473de335"
+  integrity sha1-8lGqgVD8C2p86f6rIYAqKEc94zU=
+
 "@types/klaw@^3.0.0":
   version "3.0.0"
   resolved "https://registry.npmjs.org/@types/klaw/-/klaw-3.0.0.tgz#97f70ba844c0c70b8e280eeeebb83caf054fc726"

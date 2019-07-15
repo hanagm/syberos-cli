@@ -109,6 +109,7 @@
     "@types/ejs": "^2.6.3",
     "@types/fs-extra": "^5.0.4",
     "@types/jest": "^23.3.10",
+    "@types/joi": "^14.3.3",
     "@types/klaw": "^3.0.0",
     "@types/lodash": "^4.14.119",
     "@types/node": "^10.12.18",
