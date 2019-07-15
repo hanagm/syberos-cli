@@ -81,10 +81,6 @@ exports.createApp = function(creater, params, helper, cb) {
     platformsDir
   )
 
-  // 删除多余文件
-  fs.unlinkSync(path.join(platformsDir, 'syberos', 'demo.pro'))
-  fs
-
   // 拷贝Lib模板工程
   fs.copySync(
     path.join(creater.templatePath(), template, libDir),
@@ -149,34 +145,16 @@ exports.createApp = function(creater, params, helper, cb) {
     }
   )
 
-  // 创建projectname.pro文件
+  // 创建sopconfig.xml文件
   creater.template(
     template,
-    'syberconfig/projectpro',
-    path.join(platformsDir, syberosDir, `${projectName}.pro`),
+    'syberconfig/sopconfigxml',
+    path.join(platformsDir, syberosDir, `sopconfig.xml`),
     {
-      projectName
+      sopid
     }
   )
-  // 忽略创建默认index.js
-  // creater.template(template, path.join(platformsDirName, 'index'), path.join(platformsDir, 'index.js'), {
-  //   date,
-  //   projectName
-  // })
 
-  // exports.createPage(creater, {
-  //   page: 'index',
-  //   projectDir: projectPath,
-  //   src,
-  //   template,
-  //   typescript,
-  //   css
-  // })
-
-  // 创建config/xxx.js 配置文件,暂时忽略
-  //creater.template(template, path.join(platformsDirName, 'dev'), path.join(platformsDir, 'dev.js'))
-  //creater.template(template, path.join(platformsDirName, 'dev'), path.join(platformsDir, 'dev.js'))
-  //creater.template(template, path.join(platformsDirName, 'prod'), path.join(platformsDir, 'prod.js'))
   if (useNpmrc)
     creater.template(template, 'npmrc', path.join(projectPath, '.npmrc'))
   if (useYarnLock)

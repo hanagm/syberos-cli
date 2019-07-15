@@ -23,7 +23,7 @@ export default class Build {
     await this.copywww()
     // 3、执行构建命令
 
-    this.executeShell()
+    // this.executeShell()
   }
 
   /**
@@ -52,16 +52,17 @@ export default class Build {
    * @param appPath
    */
   private async copywww(appPath: string = this.appPath) {
-    const projectName = getProjectName(appPath)
+    // const projectName = getProjectName(appPath)
     const wwwPath = path.join(appPath, config.SOURCE_DIR)
 
     // 模板目录
-    const syberosPath = path.join(appPath, 'platfroms', 'syberos', projectName)
+    const syberosPath = path.join(appPath, 'platforms', 'syberos', 'app', 'www')
 
-    console.log('--www', wwwPath)
-    console.log('--syberosPath', syberosPath)
+    console.log('--', wwwPath)
+    console.log('--', syberosPath)
 
     try {
+      await fs.emptyDir(syberosPath)
       // 拷贝
       await fs.copy(wwwPath, syberosPath)
     } catch (err) {

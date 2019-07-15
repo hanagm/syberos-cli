@@ -29,7 +29,7 @@ class Build {
             // 2、拷贝www路径到模板下
             yield this.copywww();
             // 3、执行构建命令
-            this.executeShell();
+            // this.executeShell()
         });
     }
     /**
@@ -58,13 +58,14 @@ class Build {
      */
     copywww(appPath = this.appPath) {
         return __awaiter(this, void 0, void 0, function* () {
-            const projectName = helper_1.getProjectName(appPath);
+            // const projectName = getProjectName(appPath)
             const wwwPath = path.join(appPath, index_1.default.SOURCE_DIR);
             // 模板目录
-            const syberosPath = path.join(appPath, 'platfroms', 'syberos', projectName);
-            console.log('--www', wwwPath);
-            console.log('--syberosPath', syberosPath);
+            const syberosPath = path.join(appPath, 'platforms', 'syberos', 'app', 'www');
+            console.log('--', wwwPath);
+            console.log('--', syberosPath);
             try {
+                yield fs.emptyDir(syberosPath);
                 // 拷贝
                 yield fs.copy(wwwPath, syberosPath);
             }
