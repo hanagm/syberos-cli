@@ -1,3 +1,5 @@
+import * as chokidar from 'chokidar'
+import * as path from 'path'
 import { AppBuildConfig } from '../util/constants'
 import Build from './build'
 
@@ -8,5 +10,30 @@ import Build from './build'
  */
 export const build = (appPath: string, config: AppBuildConfig) => {
   const build = new Build(appPath, config)
-  build.start()
+  // build.start()
+
+  const watcher = chokidar.watch(path.join(appPath, 'www'), {
+    ignored: /(^|[/\\])\../,
+    persistent: true,
+    ignoreInitial: true
+  })
+
+  // Something to use when events are received.
+  const log = console.log.bind(console)
+  // Add event listeners.
+  watcher
+    .on('add', path => log(`File ${path} has been added`))
+    .on('change', path => log(`File ${path} has been changed`))
+    .on('unlink', path => log(`File ${path} has been removed`))
+
+  // More possible events.
+  watcher
+    .on('addDir', path => log(`Directory ${path} has been added`))
+    .on('unlinkDir', path => log(`Directory ${path} has been removed`))
+    .on('error', error => log(`Watcher error: ${error}`))
+    .on('ready', () => log('Initial scan complete. Ready for changes'))
+    .on('raw', (event, path, details) => {
+      // internal
+      log('Raw event info:', event, path, details)
+    })
 }

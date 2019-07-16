@@ -110,7 +110,8 @@ class Build {
         }
         if (cmd) {
             console.info('执行指令：', cmd);
-            shelljs.exec(cmd);
+            shelljs.exec(cmd, (code, stdout, stderr) => {
+            });
             // o.send(`/home/abeir/Syberos-Pdk/targets/target-armv7tnhl-xuanwu/usr/lib/qt5/bin/qmake /home/abeir/workspace/syberos/syberos-cli-test/test1/syberos.pro -r -spec linux-g++ CONFIG+=release`)
         }
     }
