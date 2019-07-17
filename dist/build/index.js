@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chokidar = require("chokidar");
 const path = require("path");
 const build_1 = require("./build");
-const helper_1 = require("src/syberos/helper");
+const helper_1 = require("../syberos/helper");
 /**
  * 编译APP
  * @param appPath 工程目录

@@ -18,13 +18,15 @@ class Build {
         this.conf = {};
         this.appPath = appPath;
         this.conf = Object.assign({}, this.conf, config);
+        this.pdkRootPath = this.pdkPath();
+        this.targetName = helper_1.getTargetName(this.appPath, this.conf.adapter);
     }
     /**
      * 开始编译
      */
     start() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('开始编译：', this.appPath);
+            console.log('开始编译：', this.appPath, JSON.stringify(this.conf));
             // 1、生成编译目录
             yield this.mkdirBuild();
             // 2、拷贝www路径到模板下
@@ -35,20 +37,16 @@ class Build {
     }
     /**
      * 生成编译目录
-     * @param appPath 项目目录
-     * @param targetName 编译的target
      */
     mkdirBuild() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('准备编译目录');
             const appPath = this.appPath;
             const { adapter, debug } = this.conf;
-            // target
-            const targetName = this.getTargetName();
-            const projectName = helper_1.getProjectName(appPath);
             // 定义编译目录
-            const buildDir = `${appPath}/.build-${adapter}-${projectName}-${targetName}${debug ? '-Debug' : ''}`;
+            const buildDir = `${appPath}/.build-${adapter}-${this.targetName}${debug ? '-Debug' : ''}`;
             yield fs.emptyDir(buildDir);
+            shelljs.cd(buildDir);
             console.info('已创建编译目录：', buildDir);
         });
     }
@@ -81,60 +79,52 @@ class Build {
     executeShell() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log('准备执行编译指令');
-            const pdkPath = this.pdkPath();
-            const targetName = this.getTargetName();
-            // kchroot
-            this.execKchroot(pdkPath, targetName);
-            // qmake
-            // this.execQmake(pdkPath, targetName)
-            // // make
-            // this.execMake()
-            // // buildPkg
-            // this.execBuildPkg()
+            // kchroot qmake
+            this.execKchroot(this.qmakeCommand());
+            // kchroot make
+            this.execKchroot(this.makeCommand());
+            // kchroot buildPkg
+            this.execKchroot(this.buildPkgCommand());
+            // exit
+            shelljs.exit();
         });
     }
-    execKchroot(pdkRootPath, targetName) {
+    execKchroot(subCommand = '') {
         const { adapter } = this.conf;
-        const kchroot = this.locateKchroot(pdkRootPath);
-        let cmd = 'sudo ';
+        const kchroot = this.locateKchroot();
+        let cmd = '';
         if ("device" /* DEVICE */ === adapter) {
             // 真机
-            cmd += `${kchroot} 'sb2 -t ${targetName} -R'`;
+            cmd += `${kchroot} 'sb2 -t ${this.targetName} -R'`;
         }
         else if ("simulator" /* SIMULATOR */ === adapter) {
             // 模拟器
-            cmd += `${kchroot} exec_${targetName}`;
+            cmd += `${kchroot} exec_${this.targetName}`;
         }
         else {
             throw new Error('adapter类型错误');
         }
         if (cmd) {
+            if (subCommand) {
+                cmd += ` '${subCommand}'`;
+            }
             console.info('执行指令：', cmd);
-            shelljs.exec(cmd, (code, stdout, stderr) => {
-                console.log('----', stderr);
-                this.execQmake(pdkRootPath, targetName);
-            });
-            // o.send(`/home/abeir/Syberos-Pdk/targets/target-armv7tnhl-xuanwu/usr/lib/qt5/bin/qmake /home/abeir/workspace/syberos/syberos-cli-test/test1/syberos.pro -r -spec linux-g++ CONFIG+=release`)
+            shelljs.exec(cmd);
         }
     }
-    execQmake(pdkRootPath, targetName, appPath = this.appPath) {
+    qmakeCommand() {
         const { debug } = this.conf;
-        const qmake = this.locateQmake(pdkRootPath, targetName);
+        const qmake = this.locateQmake();
         const syberosPro = this.locateSyberosPro();
         const qmakeConfig = debug ? 'qml_debug' : 'release';
-        const cmd = `${qmake} ${syberosPro} -r -spec linux-g++ CONFIG+=${qmakeConfig}`;
-        console.info('执行指令：', cmd);
-        shelljs.exec(cmd);
+        return `${qmake} ${syberosPro} -r -spec linux-g++ CONFIG+=${qmakeConfig}`;
     }
-    execMake(make = '/usr/bin/make') {
-        console.info('执行指令：', make);
-        shelljs.exec(make);
+    makeCommand() {
+        return '/usr/bin/make';
     }
-    execBuildPkg() {
+    buildPkgCommand() {
         const syberosPro = this.locateSyberosPro();
-        const cmd = `buildpkg ${syberosPro}`;
-        console.info('执行指令：', cmd);
-        shelljs.exec(cmd);
+        return `buildpkg ${syberosPro}`;
     }
     /**
      * 查找PDK路径
@@ -150,34 +140,21 @@ class Build {
     }
     /**
      * 查找kchroot路径
-     * @return {string} kchroot 路径
      */
-    locateKchroot(pdkRootPath) {
-        return path.join(pdkRootPath, 'sdk', 'script', 'kchroot');
+    locateKchroot() {
+        return path.join(this.pdkRootPath, 'sdk', 'script', 'kchroot');
     }
     /**
      * 查找qmake路径
-     * @param pdkRootPath  pdk根目录
-     * @param target target名称
-     * @return {string} qmake 路径
      */
-    locateQmake(pdkRootPath, target) {
-        return path.join(pdkRootPath, 'target', target, 'usr', 'lib', 'qt5', 'bin', 'qmake');
+    locateQmake() {
+        return path.join(this.pdkRootPath, 'targets', this.targetName, 'usr', 'lib', 'qt5', 'bin', 'qmake');
     }
     /**
      * 查找项目中的syberos.pro文件路径
-     * @param appPath 项目根目录
-     * @return {string} syberos.pro文件路径
      */
-    locateSyberosPro(appPath = this.appPath) {
-        return path.join(appPath, 'platforms', 'syberos', 'syberos.pro');
-    }
-    getTargetName() {
-        const { adapter, target } = this.conf;
-        if (target) {
-            return target;
-        }
-        return helper_1.getTargetName(this.appPath, adapter);
+    locateSyberosPro() {
+        return path.join(this.appPath, 'platforms', 'syberos', 'syberos.pro');
     }
 }
 exports.default = Build;

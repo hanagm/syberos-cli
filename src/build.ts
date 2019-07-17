@@ -31,7 +31,7 @@ function buildForDevice(appPath: string, { debug }: IBuildConfig) {
 }
 
 function buildForSimulator(appPath: string, { debug }: IBuildConfig) {
-  require('./build').build(appPath, {
+  require('./build/index').build(appPath, {
     debug,
     adapter: BUILD_TYPES.SIMULATOR
   })

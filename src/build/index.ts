@@ -2,7 +2,7 @@ import * as chokidar from 'chokidar'
 import * as path from 'path'
 import { AppBuildConfig } from '../util/constants'
 import Build from './build'
-import { getProjectConfig } from 'src/syberos/helper'
+import { getProjectConfig } from '../syberos/helper'
 
 /**
  * 编译APP

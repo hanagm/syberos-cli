@@ -23,7 +23,7 @@ function buildForDevice(appPath, { debug }) {
     });
 }
 function buildForSimulator(appPath, { debug }) {
-    require('./build').build(appPath, {
+    require('./build/index').build(appPath, {
         debug,
         adapter: "simulator" /* SIMULATOR */
     });
