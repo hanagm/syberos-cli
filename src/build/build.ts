@@ -10,7 +10,7 @@ export default class Build {
   private appPath: string
   constructor(appPath: string, config: AppBuildConfig) {
     this.appPath = appPath
-    this.conf = Object.assign(this.conf, config)
+    this.conf = { ...this.conf, ...config }
   }
 
   /**
@@ -42,7 +42,7 @@ export default class Build {
     // 定义编译目录
     const buildDir = `${appPath}/.build-${adapter}-${projectName}-${targetName}${
       debug ? '-Debug' : ''
-      }`
+    }`
     await fs.emptyDir(buildDir)
 
     console.info('已创建编译目录：', buildDir)
@@ -66,7 +66,7 @@ export default class Build {
       await fs.copy(wwwPath, syberosPath)
     } catch (err) {
       console.error(err)
-      return;
+      return
     }
     console.info('已拷贝www目录，From：', wwwPath, ' To：', syberosPath)
   }
@@ -92,13 +92,13 @@ export default class Build {
 
     const kchroot = this.locateKchroot(pdkRootPath)
 
-    let cmd = ''
+    let cmd = 'sudo '
     if (DEVICES_TYPES.DEVICE === adapter) {
       // 真机
-      cmd = `${kchroot} 'sb2 -t ${targetName} -R'`
+      cmd += `${kchroot} 'sb2 -t ${targetName} -R'`
     } else if (DEVICES_TYPES.SIMULATOR === adapter) {
       // 模拟器
-      cmd = `${kchroot} exec_${targetName}`
+      cmd += `${kchroot} exec_${targetName}`
     } else {
       throw new Error('adapter类型错误')
     }
@@ -106,16 +106,21 @@ export default class Build {
     if (cmd) {
       console.info('执行指令：', cmd)
       shelljs.exec(cmd, (code: number, stdout: string, stderr: string) => {
-
+        console.log('----', stderr)
+        this.execQmake(pdkRootPath, targetName)
       })
       // o.send(`/home/abeir/Syberos-Pdk/targets/target-armv7tnhl-xuanwu/usr/lib/qt5/bin/qmake /home/abeir/workspace/syberos/syberos-cli-test/test1/syberos.pro -r -spec linux-g++ CONFIG+=release`)
     }
   }
 
-  private execQmake(pdkRootPath: string, targetName: string, appPath: string = this.appPath) {
+  private execQmake(
+    pdkRootPath: string,
+    targetName: string,
+    appPath: string = this.appPath
+  ) {
     const { debug } = this.conf
 
-    const qmake = this.locateQmake(pdkRootPath, targetName);
+    const qmake = this.locateQmake(pdkRootPath, targetName)
     const syberosPro = this.locateSyberosPro()
 
     const qmakeConfig = debug ? 'qml_debug' : 'release'
@@ -164,7 +169,16 @@ export default class Build {
    * @return {string} qmake 路径
    */
   private locateQmake(pdkRootPath: string, target: string) {
-    return path.join(pdkRootPath, 'target', target, 'usr', 'lib', 'qt5', 'bin', 'qmake')
+    return path.join(
+      pdkRootPath,
+      'target',
+      target,
+      'usr',
+      'lib',
+      'qt5',
+      'bin',
+      'qmake'
+    )
   }
   /**
    * 查找项目中的syberos.pro文件路径
@@ -178,7 +192,7 @@ export default class Build {
   private getTargetName() {
     const { adapter, target } = this.conf
     if (target) {
-      return target;
+      return target
     }
     return getTargetName(this.appPath, adapter)
   }

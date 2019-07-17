@@ -2,6 +2,7 @@ import * as chokidar from 'chokidar'
 import * as path from 'path'
 import { AppBuildConfig } from '../util/constants'
 import Build from './build'
+import { getProjectConfig } from 'src/syberos/helper'
 
 /**
  * 编译APP
@@ -9,7 +10,8 @@ import Build from './build'
  * @param param1 参数信息
  */
 export const build = (appPath: string, config: AppBuildConfig) => {
-  const build = new Build(appPath, config)
+  const newConfig = { ...config, ...getProjectConfig(appPath) }
+  const build = new Build(appPath, newConfig)
   build.start()
 
   const watcher = chokidar.watch(path.join(appPath, 'www'), {

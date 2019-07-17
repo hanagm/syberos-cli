@@ -3,14 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chokidar = require("chokidar");
 const path = require("path");
 const build_1 = require("./build");
+const helper_1 = require("src/syberos/helper");
 /**
  * 编译APP
  * @param appPath 工程目录
  * @param param1 参数信息
  */
 exports.build = (appPath, config) => {
-    const build = new build_1.default(appPath, config);
-    // build.start()
+    const newConfig = Object.assign({}, config, helper_1.getProjectConfig(appPath));
+    const build = new build_1.default(appPath, newConfig);
+    build.start();
     const watcher = chokidar.watch(path.join(appPath, 'www'), {
         ignored: /(^|[/\\])\../,
         persistent: true,

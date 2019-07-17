@@ -17,7 +17,7 @@ class Build {
     constructor(appPath, config) {
         this.conf = {};
         this.appPath = appPath;
-        this.conf = Object.assign(this.conf, config);
+        this.conf = Object.assign({}, this.conf, config);
     }
     /**
      * 开始编译
@@ -96,14 +96,14 @@ class Build {
     execKchroot(pdkRootPath, targetName) {
         const { adapter } = this.conf;
         const kchroot = this.locateKchroot(pdkRootPath);
-        let cmd = '';
+        let cmd = 'sudo ';
         if ("device" /* DEVICE */ === adapter) {
             // 真机
-            cmd = `${kchroot} 'sb2 -t ${targetName} -R'`;
+            cmd += `${kchroot} 'sb2 -t ${targetName} -R'`;
         }
         else if ("simulator" /* SIMULATOR */ === adapter) {
             // 模拟器
-            cmd = `${kchroot} exec_${targetName}`;
+            cmd += `${kchroot} exec_${targetName}`;
         }
         else {
             throw new Error('adapter类型错误');
@@ -111,6 +111,8 @@ class Build {
         if (cmd) {
             console.info('执行指令：', cmd);
             shelljs.exec(cmd, (code, stdout, stderr) => {
+                console.log('----', stderr);
+                this.execQmake(pdkRootPath, targetName);
             });
             // o.send(`/home/abeir/Syberos-Pdk/targets/target-armv7tnhl-xuanwu/usr/lib/qt5/bin/qmake /home/abeir/workspace/syberos/syberos-cli-test/test1/syberos.pro -r -spec linux-g++ CONFIG+=release`)
         }
