@@ -6,22 +6,18 @@ import * as semver from 'semver'
 
 import Creator from './creator'
 
-import {
-  shouldUseYarn,
-  shouldUseCnpm,
-  getPkgVersion
-} from '../util'
+import { shouldUseYarn, shouldUseCnpm, getPkgVersion } from '../util'
 import CONFIG from '../config'
 
 interface IProjectConf {
-  projectName: string,
-  projectDir: string,
-  sopid: string,
-  template: 'default' | 'mobx' | 'redux',
-  description?: string,
-  typescript?: boolean,
-  css: 'none' | 'sass' | 'stylus' | 'less',
-  date?: string,
+  projectName: string
+  projectDir: string
+  sopid: string
+  template: 'default' | 'mobx' | 'redux'
+  description?: string
+  typescript?: boolean
+  css: 'none' | 'sass' | 'stylus' | 'less'
+  date?: string
   src?: string
 }
 
@@ -37,34 +33,38 @@ export default class Project extends Creator {
     }
     this.rootPath = this._rootPath
 
-    this.conf = Object.assign({
-      typescript: false,
-      projectName: '',
-      projectDir: '',
-      template: 'default',
-      sopid: 'com.syberos.demo',
-      description: ''
-    }, options)
-
+    this.conf = Object.assign(
+      {
+        typescript: false,
+        projectName: '',
+        projectDir: '',
+        template: 'default',
+        sopid: 'com.syberos.demo',
+        description: ''
+      },
+      options
+    )
   }
 
   init() {
     console.log(chalk.green(`SYBEROS-CLI 即将创建一个新项目!`))
-    console.log('Need help? Go and open issue: https://github.com/syberos-team/syberos-hybrid')
+    console.log(
+      'Need help? Go and open issue: https://github.com/syberos-team/syberos-hybrid'
+    )
     console.log()
   }
 
   create() {
-    this.ask()
-      .then(answers => {
-        if(!answers.sopid){
-          answers.sopid=this.conf.sopid;
-        }
-        const date = new Date()
-        this.conf = Object.assign(this.conf, answers)
-        this.conf.date = `${date.getFullYear()}-${(date.getMonth() + 1)}-${date.getDate()}`
-        this.write()
-      })
+    this.ask().then(answers => {
+      if (!answers.sopid) {
+        answers.sopid = this.conf.sopid
+      }
+      const date = new Date()
+      this.conf = Object.assign(this.conf, answers)
+      this.conf.date = `${date.getFullYear()}-${date.getMonth() +
+        1}-${date.getDate()}`
+      this.write()
+    })
   }
 
   ask() {
@@ -106,7 +106,18 @@ export default class Project extends Creator {
       prompts.push({
         type: 'input',
         name: 'sopid',
-        message: '请输入appid，默认为com.syberos.demo:'
+        message: '请输入sopid,如【com.syber.myapp】:',
+        validate(input) {
+          if (!input) {
+            return 'sopid不能为空！'
+          }
+          const re = /[\u4E00-\u9FA5]|[\uFE30-\uFFA0]/gi
+          if (re.test(input)) {
+            return 'sopid不能含有中文！'
+          }
+
+          return true
+        }
       })
     }
 
@@ -117,7 +128,6 @@ export default class Project extends Creator {
         message: '请输入项目介绍:'
       })
     }
-
 
     // 隐藏模板选择
     // const templateChoices = [{
@@ -154,14 +164,22 @@ export default class Project extends Creator {
   }
 
   write(cb?: () => void) {
-
     const { template } = this.conf
     this.conf.src = CONFIG.SOURCE_DIR
-    const { createApp } = require(path.join(this.templatePath(), template, 'index.js'))
-    createApp(this, this.conf, {
-      shouldUseYarn,
-      shouldUseCnpm,
-      getPkgVersion
-    }, cb)
+    const { createApp } = require(path.join(
+      this.templatePath(),
+      template,
+      'index.js'
+    ))
+    createApp(
+      this,
+      this.conf,
+      {
+        shouldUseYarn,
+        shouldUseCnpm,
+        getPkgVersion
+      },
+      cb
+    )
   }
 }
