@@ -10,7 +10,7 @@ import Build from './build'
  */
 export const build = (appPath: string, config: AppBuildConfig) => {
   const build = new Build(appPath, config)
-  // build.start()
+  build.start()
 
   const watcher = chokidar.watch(path.join(appPath, 'www'), {
     ignored: /(^|[/\\])\../,
