@@ -34,7 +34,7 @@ exports.createApp = function (creater, params, helper, cb) {
   const {
     projectName,
     projectDir,
-    description,
+    appName,
     template,
     typescript,
     date,
@@ -89,7 +89,7 @@ exports.createApp = function (creater, params, helper, cb) {
 
   // 创建package.json
   creater.template(template, 'pkg', path.join(projectPath, 'package.json'), {
-    description,
+    description: appName,
     projectName,
     version,
     css,
@@ -103,7 +103,7 @@ exports.createApp = function (creater, params, helper, cb) {
     'project',
     path.join(projectPath, 'project.config.json'),
     {
-      description,
+      appName,
       projectName,
       sopid,
       target,
@@ -151,6 +151,7 @@ exports.createApp = function (creater, params, helper, cb) {
     'syberconfig/sopconfigxml',
     path.join(platformsDir, syberosDir, `sopconfig.xml`),
     {
+      appName,
       projectName,
       sopid
     }

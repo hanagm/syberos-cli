@@ -648,6 +648,21 @@
     "@types/glob" "*"
     "@types/node" "*"
 
+"@types/ssh2-streams@*":
+  version "0.1.6"
+  resolved "https://registry.npmjs.org/@types/ssh2-streams/-/ssh2-streams-0.1.6.tgz#1ff5b1fe50c15f282efe9fd092c68494f8702bc2"
+  integrity sha512-NB+SYftagfHTDPdgVyvSZCeg5MURyHECd/PycGIW9hwhnEbTFxIdDbFtf3jxUO3rRnfr0lfdtkZFiv28T1cAsg==
+  dependencies:
+    "@types/node" "*"
+
+"@types/ssh2@^0.5.38":
+  version "0.5.38"
+  resolved "https://registry.npmjs.org/@types/ssh2/-/ssh2-0.5.38.tgz#71f7c8f1d0636663158561af103c385ad439c7bc"
+  integrity sha512-rMnCnd0VIEUpCD1O5V50L1I8asHMBHZUYBnG6wlim1SdUrKUn60yiNpW5BnnT6QkTExaUXVrM8N883ZPPEPtsg==
+  dependencies:
+    "@types/node" "*"
+    "@types/ssh2-streams" "*"
+
 "@types/tough-cookie@*":
   version "2.3.5"
   resolved "https://registry.npmjs.org/@types/tough-cookie/-/tough-cookie-2.3.5.tgz#9da44ed75571999b65c37b60c9b2b88db54c585d"

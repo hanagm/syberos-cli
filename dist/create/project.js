@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const fs = require("fs-extra");
 const chalk_1 = require("chalk");
+const _ = require("lodash");
 const inquirer = require("inquirer");
 const semver = require("semver");
 const creator_1 = require("./creator");
@@ -21,8 +22,8 @@ class Project extends creator_1.default {
             projectName: '',
             projectDir: '',
             template: 'default',
-            sopid: 'com.syberos.demo',
-            description: ''
+            sopid: '',
+            appName: ''
         }, options);
     }
     init() {
@@ -32,11 +33,15 @@ class Project extends creator_1.default {
     }
     create() {
         this.ask().then(answers => {
-            if (!answers.sopid) {
-                answers.sopid = this.conf.sopid;
-            }
             const date = new Date();
-            this.conf = Object.assign(this.conf, answers);
+            //对象
+            const newAnswer = {};
+            for (const obj in answers) {
+                console.log(obj);
+                const value = _.trim(answers[obj]);
+                newAnswer[obj] = value;
+            }
+            this.conf = Object.assign(this.conf, newAnswer);
             this.conf.date = `${date.getFullYear()}-${date.getMonth() +
                 1}-${date.getDate()}`;
             this.write();
@@ -77,7 +82,20 @@ class Project extends creator_1.default {
                 }
             });
         }
-        if (conf.sopid === 'com.syberos.demo') {
+        if (!conf.appName) {
+            prompts.push({
+                type: 'input',
+                name: 'appName',
+                message: '请输入应用名称:',
+                validate(input) {
+                    if (!input) {
+                        return '应用名称不能为空！';
+                    }
+                    return true;
+                }
+            });
+        }
+        if (!conf.sopid) {
             prompts.push({
                 type: 'input',
                 name: 'sopid',
@@ -94,42 +112,6 @@ class Project extends creator_1.default {
                 }
             });
         }
-        if (typeof conf.description !== 'string') {
-            prompts.push({
-                type: 'input',
-                name: 'description',
-                message: '请输入项目介绍:'
-            });
-        }
-        // 隐藏模板选择
-        // const templateChoices = [{
-        //   name: '默认模板',
-        //   value: 'default'
-        // }]
-        // if (typeof conf.template !== 'string') {
-        //   prompts.push({
-        //     type: 'list',
-        //     name: 'template',
-        //     message: '请选择模板',
-        //     choices: templateChoices
-        //   })
-        // } else {
-        //   let isTemplateExist = false
-        //   templateChoices.forEach(item => {
-        //     if (item.value === conf.template) {
-        //       isTemplateExist = true
-        //     }
-        //   })
-        //   if (!isTemplateExist) {
-        //     console.log(chalk.red('你选择的模板不存在!'))
-        //     console.log(chalk.red('目前提供了以下模板以供使用:'))
-        //     console.log()
-        //     templateChoices.forEach(item => {
-        //       console.log(chalk.green(`- ${item.name}`))
-        //     })
-        //     process.exit(1)
-        //   }
-        // }
         return inquirer.prompt(prompts);
     }
     write(cb) {
