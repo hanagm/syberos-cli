@@ -3,7 +3,7 @@ QT += gui qml quick widgets webkit network
 
 TEMPLATE = app
 
-TARGET = Demo
+TARGET = app
 
 CONFIG += link_pkgconfig
 
