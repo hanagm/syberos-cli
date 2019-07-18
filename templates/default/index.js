@@ -145,14 +145,14 @@ exports.createApp = function (creater, params, helper, cb) {
   )
 
   // 创建app.pro文件
-  creater.template(
-    template,
-    'syberconfig/apppro',
-    path.join(platformsDir, syberosDir, 'app', `app.pro`),
-    {
-      projectName
-    }
-  )
+  // creater.template(
+  //   template,
+  //   'syberconfig/apppro',
+  //   path.join(platformsDir, syberosDir, 'app', `app.pro`),
+  //   {
+  //     projectName
+  //   }
+  // )
 
   // 创建sopconfig.xml文件
   creater.template(
