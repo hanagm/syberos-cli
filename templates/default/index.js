@@ -134,7 +134,6 @@ exports.createApp = function (creater, params, helper, cb) {
   // 创建 默认 index.css
   creater.template(template, 'scss', path.join(sourceDir, pageCSSName))
 
-  console.log(path.join(platformsDir, syberosDir, 'syberospri'))
   // 创建syberos.pri文件
   creater.template(
     template,
@@ -142,6 +141,16 @@ exports.createApp = function (creater, params, helper, cb) {
     path.join(platformsDir, syberosDir, 'syberos.pri'),
     {
       sopid
+    }
+  )
+
+  // 创建app.pro文件
+  creater.template(
+    template,
+    'syberconfig/apppro',
+    path.join(platformsDir, syberosDir, 'app', `app.pro`),
+    {
+      projectName
     }
   )
 
