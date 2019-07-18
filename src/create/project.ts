@@ -61,7 +61,6 @@ export default class Project extends Creator {
       //对象
       const newAnswer = {};
       for (const obj in answers) {
-        console.log(obj);
         const value = _.trim(answers[obj])
         newAnswer[obj] = value;
       }

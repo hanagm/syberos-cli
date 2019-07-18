@@ -37,7 +37,6 @@ class Project extends creator_1.default {
             //对象
             const newAnswer = {};
             for (const obj in answers) {
-                console.log(obj);
                 const value = _.trim(answers[obj]);
                 newAnswer[obj] = value;
             }
