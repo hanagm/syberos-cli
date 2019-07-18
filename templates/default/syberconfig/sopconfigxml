@@ -3,8 +3,8 @@
     <uses-permission syberos:name="syberos.permission.ACCESS_STORAGE"/>
     <uses-permission syberos:name="syberos.permission.ACCESS_WIFI"/>
     <uses-sdk syberos:minSdkVersion="" syberos:targetSdkVersion=""/>
-    <application syberos:debuggable="true" syberos:name="demo" syberos:description="Brief introduction of your application here. " syberos:icon="res/app.png">
-        <uiapp syberos:launcher="true" syberos:id="Demo" syberos:splash="" syberos:exec="bin/Demo" syberos:background="" syberos:name="" syberos:icon="res/app.png">
+    <application syberos:debuggable="true" syberos:name="<%=projectName%>" syberos:description="Brief introduction of your application here. " syberos:icon="res/app.png">
+        <uiapp syberos:launcher="true" syberos:id="<%=projectName%>" syberos:splash="" syberos:exec="bin/Demo" syberos:background="" syberos:name="" syberos:icon="res/app.png">
             <doctype syberos:id=""/>
         </uiapp>
     </application>

@@ -15,7 +15,7 @@ const styleExtMap = {
   none: 'css'
 }
 
-exports.createPage = function(creater, params, cb) {
+exports.createPage = function (creater, params, cb) {
   const { page, projectDir, src, template, typescript, css } = params
   let pageCSSName
   const sourceDir = path.join(projectDir, src)
@@ -30,7 +30,7 @@ exports.createPage = function(creater, params, cb) {
   })
 }
 
-exports.createApp = function(creater, params, helper, cb) {
+exports.createApp = function (creater, params, helper, cb) {
   const {
     projectName,
     projectDir,
@@ -151,6 +151,7 @@ exports.createApp = function(creater, params, helper, cb) {
     'syberconfig/sopconfigxml',
     path.join(platformsDir, syberosDir, `sopconfig.xml`),
     {
+      projectName,
       sopid
     }
   )
