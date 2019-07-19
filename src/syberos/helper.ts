@@ -22,8 +22,8 @@ export const getProjectConfig = (appPath: string) => {
  * @return string
  */
 export const getProjectName = (appPath: string) => {
-  const { projectname } = getProjectConfig(appPath)
-  return projectname
+  const { projectName } = getProjectConfig(appPath)
+  return projectName
 }
 
 /**

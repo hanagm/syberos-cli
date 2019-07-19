@@ -23,8 +23,8 @@ exports.getProjectConfig = (appPath) => {
  * @return string
  */
 exports.getProjectName = (appPath) => {
-    const { projectname } = exports.getProjectConfig(appPath);
-    return projectname;
+    const { projectName } = exports.getProjectConfig(appPath);
+    return projectName;
 };
 /**
  * 获取ProjectConfig 配置文件中的target

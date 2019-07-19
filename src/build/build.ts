@@ -4,12 +4,15 @@ import * as shelljs from 'shelljs'
 import { AppBuildConfig, DEVICES_TYPES } from '../util/constants'
 import { getTargetName } from '../syberos/helper'
 import config from '../config/index'
+import { getRootPath } from '../util/index'
 
 export default class Build {
   private conf: any = {}
   private appPath: string
   private pdkRootPath: string
   private targetName: string
+  // 定义编译目录
+  private buildDir: string
 
   constructor(appPath: string, config: AppBuildConfig) {
     this.appPath = appPath
@@ -29,6 +32,8 @@ export default class Build {
     await this.copywww()
     // 3、执行构建命令
     await this.executeShell()
+    // 4、安装sop
+    await this.installSop();
   }
 
   /**
@@ -40,12 +45,12 @@ export default class Build {
     const { adapter, debug } = this.conf
 
     // 定义编译目录
-    const buildDir = `${appPath}/.build-${adapter}-${this.targetName}${debug ? '-Debug' : ''}`
+    this.buildDir = `${appPath}/.build-${adapter}-${this.targetName}${debug ? '-Debug' : ''}`
 
-    await fs.emptyDir(buildDir)
-    shelljs.cd(buildDir)
+    await fs.emptyDir(this.buildDir)
+    shelljs.cd(this.buildDir)
 
-    console.info('已创建编译目录：', buildDir)
+    console.info('已创建编译目录：', this.buildDir)
   }
 
   /**
@@ -81,9 +86,57 @@ export default class Build {
     this.execKchroot(this.makeCommand())
     // kchroot buildPkg
     this.execKchroot(this.buildPkgCommand())
-    // exit
-    shelljs.exit()
   }
+
+  /**
+   * 安装sop包
+   */
+  private async installSop() {
+    console.log('开始安装sop包...')
+    const { adapter } = this.conf
+    let ip: string
+    let port: number
+    if (DEVICES_TYPES.DEVICE === adapter) {
+      ip = '192.168.100.100'
+      port = 22
+    } else if (DEVICES_TYPES.SIMULATOR === adapter) {
+      ip = 'localhost'
+      port = 5555
+    } else {
+      throw new Error('adapter类型错误')
+    }
+
+    const { stdout } = shelljs.exec("ls --file-type *.sop |awk '{print i$0}' i=`pwd`'/'")
+    const sopPath = stdout.trim()
+
+    // 发送
+    this.sendSop(ip, port, sopPath)
+    // 安装
+    this.sshInstallSop(ip, port, path.basename(sopPath))
+    // 启动
+    this.sshStartApp(ip, port)
+  }
+
+
+  private sendSop(ip: string, port: number, sopPath: string) {
+    console.log('准备发送sop包', ip, port, sopPath)
+    shelljs.exec(`expect ${this.locateScripts('scp-sop.sh')} ${ip} ${port} ${sopPath}`)
+  }
+
+  private sshInstallSop(ip: string, port: number, filename: string) {
+    console.log('准备安装sop包', filename)
+    const nameSplit = filename.split('-')
+    shelljs.exec(`expect ${this.locateScripts('ssh-install-sop.sh')} ${ip} ${port} ${nameSplit[0]} ${filename}`)
+  }
+
+  private sshStartApp(ip: string, port: number) {
+    const { sopid, projectName } = this.conf
+
+    console.log('准备启动app', sopid + ':' + projectName + ':uiapp')
+    shelljs.exec(`expect ${this.locateScripts('ssh-start-app.sh')} ${ip} ${port} ${sopid} ${projectName}`)
+  }
+
+
 
   private execKchroot(subCommand: string = '') {
     const { adapter } = this.conf
@@ -146,20 +199,26 @@ export default class Build {
   /**
    * 查找kchroot路径
    */
-  private locateKchroot() {
+  private locateKchroot(): string {
     return path.join(this.pdkRootPath, 'sdk', 'script', 'kchroot')
   }
   /**
    * 查找qmake路径
    */
-  private locateQmake() {
+  private locateQmake(): string {
     return path.join(this.pdkRootPath, 'targets', this.targetName, 'usr', 'lib', 'qt5', 'bin', 'qmake')
   }
   /**
    * 查找项目中的syberos.pro文件路径
    */
-  private locateSyberosPro() {
+  private locateSyberosPro(): string {
     return path.join(this.appPath, 'platforms', 'syberos', 'syberos.pro')
   }
-
+  /**
+   * 查找sh脚本路径
+   * @param shFilename sh脚本文件吗
+   */
+  private locateScripts(shFilename: string): string {
+    return path.join(getRootPath(), 'scripts', shFilename)
+  }
 }

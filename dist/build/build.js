@@ -13,6 +13,7 @@ const path = require("path");
 const shelljs = require("shelljs");
 const helper_1 = require("../syberos/helper");
 const index_1 = require("../config/index");
+const index_2 = require("../util/index");
 class Build {
     constructor(appPath, config) {
         this.conf = {};
@@ -33,6 +34,8 @@ class Build {
             yield this.copywww();
             // 3、执行构建命令
             yield this.executeShell();
+            // 4、安装sop
+            yield this.installSop();
         });
     }
     /**
@@ -44,10 +47,10 @@ class Build {
             const appPath = this.appPath;
             const { adapter, debug } = this.conf;
             // 定义编译目录
-            const buildDir = `${appPath}/.build-${adapter}-${this.targetName}${debug ? '-Debug' : ''}`;
-            yield fs.emptyDir(buildDir);
-            shelljs.cd(buildDir);
-            console.info('已创建编译目录：', buildDir);
+            this.buildDir = `${appPath}/.build-${adapter}-${this.targetName}${debug ? '-Debug' : ''}`;
+            yield fs.emptyDir(this.buildDir);
+            shelljs.cd(this.buildDir);
+            console.info('已创建编译目录：', this.buildDir);
         });
     }
     /**
@@ -85,9 +88,51 @@ class Build {
             this.execKchroot(this.makeCommand());
             // kchroot buildPkg
             this.execKchroot(this.buildPkgCommand());
-            // exit
-            shelljs.exit();
         });
+    }
+    /**
+     * 安装sop包
+     */
+    installSop() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('开始安装sop包...');
+            const { adapter } = this.conf;
+            let ip;
+            let port;
+            if ("device" /* DEVICE */ === adapter) {
+                ip = '192.168.100.100';
+                port = 22;
+            }
+            else if ("simulator" /* SIMULATOR */ === adapter) {
+                ip = 'localhost';
+                port = 5555;
+            }
+            else {
+                throw new Error('adapter类型错误');
+            }
+            const { stdout } = shelljs.exec("ls --file-type *.sop |awk '{print i$0}' i=`pwd`'/'");
+            const sopPath = stdout.trim();
+            // 发送
+            this.sendSop(ip, port, sopPath);
+            // 安装
+            this.sshInstallSop(ip, port, path.basename(sopPath));
+            // 启动
+            this.sshStartApp(ip, port);
+        });
+    }
+    sendSop(ip, port, sopPath) {
+        console.log('准备发送sop包', ip, port, sopPath);
+        shelljs.exec(`expect ${this.locateScripts('scp-sop.sh')} ${ip} ${port} ${sopPath}`);
+    }
+    sshInstallSop(ip, port, filename) {
+        console.log('准备安装sop包', filename);
+        const nameSplit = filename.split('-');
+        shelljs.exec(`expect ${this.locateScripts('ssh-install-sop.sh')} ${ip} ${port} ${nameSplit[0]} ${filename}`);
+    }
+    sshStartApp(ip, port) {
+        const { sopid, projectName } = this.conf;
+        console.log('准备启动app', sopid + ':' + projectName + ':uiapp');
+        shelljs.exec(`expect ${this.locateScripts('ssh-start-app.sh')} ${ip} ${port} ${sopid} ${projectName}`);
     }
     execKchroot(subCommand = '') {
         const { adapter } = this.conf;
@@ -155,6 +200,13 @@ class Build {
      */
     locateSyberosPro() {
         return path.join(this.appPath, 'platforms', 'syberos', 'syberos.pro');
+    }
+    /**
+     * 查找sh脚本路径
+     * @param shFilename sh脚本文件吗
+     */
+    locateScripts(shFilename) {
+        return path.join(index_2.getRootPath(), 'scripts', shFilename);
     }
 }
 exports.default = Build;
