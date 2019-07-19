@@ -44,3 +44,15 @@ exports.getTargetName = (appPath, adapter) => {
     }
     throw new Error(`${constants_1.PROJECT_CONFIG} 配置文件未找到`);
 };
+exports.sleep = (ms) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            try {
+                resolve(1);
+            }
+            catch (e) {
+                reject(e);
+            }
+        }, ms);
+    });
+};

@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs-extra");
 const path = require("path");
 const shelljs = require("shelljs");
+const chalk_1 = require("chalk");
 const helper_1 = require("../syberos/helper");
 const index_1 = require("../config/index");
 const index_2 = require("../util/index");
@@ -20,6 +21,7 @@ class Build {
         this.appPath = appPath;
         this.conf = Object.assign({}, this.conf, config);
         this.pdkRootPath = this.pdkPath();
+        this.sdkRootPath = this.sdkPath();
         this.targetName = helper_1.getTargetName(this.appPath, this.conf.adapter);
     }
     /**
@@ -27,7 +29,7 @@ class Build {
      */
     start() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('开始编译：', this.appPath, JSON.stringify(this.conf));
+            console.log(chalk_1.default.green('开始编译'), this.appPath, JSON.stringify(this.conf));
             // 1、生成编译目录
             yield this.mkdirBuild();
             // 2、拷贝www路径到模板下
@@ -43,12 +45,15 @@ class Build {
      */
     mkdirBuild() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('准备编译目录');
+            console.log(chalk_1.default.green('准备编译目录'));
             const appPath = this.appPath;
             const { adapter, debug } = this.conf;
             // 定义编译目录
             this.buildDir = `${appPath}/.build-${adapter}-${this.targetName}${debug ? '-Debug' : ''}`;
-            yield fs.emptyDir(this.buildDir);
+            if (!fs.pathExists(this.buildDir)) {
+                yield fs.mkdirs(this.buildDir);
+            }
+            // await fs.emptyDir(this.buildDir)
             shelljs.cd(this.buildDir);
             console.info('已创建编译目录：', this.buildDir);
         });
@@ -59,7 +64,7 @@ class Build {
      */
     copywww(appPath = this.appPath) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('准备拷贝www目录');
+            console.log(chalk_1.default.green('准备拷贝www目录'));
             // const projectName = getProjectName(appPath)
             const wwwPath = path.join(appPath, index_1.default.SOURCE_DIR);
             // 模板目录
@@ -81,7 +86,7 @@ class Build {
      */
     executeShell() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('准备执行编译指令');
+            console.log(chalk_1.default.green('准备执行编译指令'));
             // kchroot qmake
             this.execKchroot(this.qmakeCommand());
             // kchroot make
@@ -95,10 +100,11 @@ class Build {
      */
     installSop() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('开始安装sop包...');
+            console.log(chalk_1.default.green('开始安装sop包...'));
             const { adapter } = this.conf;
             let ip;
             let port;
+            let useSimulator = false;
             if ("device" /* DEVICE */ === adapter) {
                 ip = '192.168.100.100';
                 port = 22;
@@ -106,12 +112,17 @@ class Build {
             else if ("simulator" /* SIMULATOR */ === adapter) {
                 ip = 'localhost';
                 port = 5555;
+                useSimulator = true;
             }
             else {
                 throw new Error('adapter类型错误');
             }
             const { stdout } = shelljs.exec("ls --file-type *.sop |awk '{print i$0}' i=`pwd`'/'");
             const sopPath = stdout.trim();
+            // 启动虚拟机
+            if (useSimulator) {
+                yield this.startvm();
+            }
             // 发送
             this.sendSop(ip, port, sopPath);
             // 安装
@@ -121,18 +132,33 @@ class Build {
         });
     }
     sendSop(ip, port, sopPath) {
-        console.log('准备发送sop包', ip, port, sopPath);
+        console.log(chalk_1.default.green('准备发送sop包'), ip, port.toString(), sopPath);
         shelljs.exec(`expect ${this.locateScripts('scp-sop.sh')} ${ip} ${port} ${sopPath}`);
     }
     sshInstallSop(ip, port, filename) {
-        console.log('准备安装sop包', filename);
+        console.log(chalk_1.default.green('准备安装sop包'), filename);
         const nameSplit = filename.split('-');
         shelljs.exec(`expect ${this.locateScripts('ssh-install-sop.sh')} ${ip} ${port} ${nameSplit[0]} ${filename}`);
     }
     sshStartApp(ip, port) {
         const { sopid, projectName } = this.conf;
-        console.log('准备启动app', sopid + ':' + projectName + ':uiapp');
+        console.log(chalk_1.default.green('准备启动app'), sopid + ':' + projectName + ':uiapp');
         shelljs.exec(`expect ${this.locateScripts('ssh-start-app.sh')} ${ip} ${port} ${sopid} ${projectName}`);
+    }
+    startvm() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const emulatorDir = path.join(this.sdkRootPath, 'emulator');
+            console.log(chalk_1.default.green('准备启动模拟器'), emulatorDir);
+            const pid = shelljs.exec('pgrep "emulator-x86"');
+            if (pid.trim()) {
+                console.log(chalk_1.default.blue(`模拟器正在运行[pid=${pid.trim()}]`));
+                return;
+            }
+            const result = shelljs.exec(`${this.locateScripts('startvm.sh')} ${emulatorDir}`);
+            if (result.code === 1) {
+                yield helper_1.sleep(2000);
+            }
+        });
     }
     execKchroot(subCommand = '') {
         const { adapter } = this.conf;
@@ -175,13 +201,19 @@ class Build {
      * 查找PDK路径
      */
     pdkPath() {
+        return this.homeSubPath('Syberos-Pdk');
+    }
+    sdkPath() {
+        return this.homeSubPath('SyberOS-SDK');
+    }
+    homeSubPath(subDir) {
         const { stdout } = shelljs.exec(`env | grep ^HOME= | cut -c 6-`);
-        const pdkPath = path.join(stdout.trim(), 'Syberos-Pdk');
-        const existe = fs.pathExists(pdkPath);
+        const subDirPath = path.join(stdout.trim(), subDir);
+        const existe = fs.pathExists(subDirPath);
         if (!existe) {
-            throw new Error('根目录下未找到Sberos-Pdk目录');
+            throw new Error(`根目录下未找到${subDir}目录`);
         }
-        return pdkPath;
+        return subDirPath;
     }
     /**
      * 查找kchroot路径

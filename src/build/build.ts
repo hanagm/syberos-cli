@@ -1,15 +1,19 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
 import * as shelljs from 'shelljs'
+import chalk from 'chalk'
 import { AppBuildConfig, DEVICES_TYPES } from '../util/constants'
-import { getTargetName } from '../syberos/helper'
+import { getTargetName, sleep } from '../syberos/helper'
 import config from '../config/index'
 import { getRootPath } from '../util/index'
 
 export default class Build {
   private conf: any = {}
   private appPath: string
+  // pdk根路径
   private pdkRootPath: string
+  // sdk根路径
+  private sdkRootPath: string
   private targetName: string
   // 定义编译目录
   private buildDir: string
@@ -17,7 +21,8 @@ export default class Build {
   constructor(appPath: string, config: AppBuildConfig) {
     this.appPath = appPath
     this.conf = { ...this.conf, ...config }
-    this.pdkRootPath = this.pdkPath();
+    this.pdkRootPath = this.pdkPath()
+    this.sdkRootPath = this.sdkPath()
     this.targetName = getTargetName(this.appPath, this.conf.adapter)
   }
 
@@ -25,7 +30,8 @@ export default class Build {
    * 开始编译
    */
   public async start() {
-    console.log('开始编译：', this.appPath, JSON.stringify(this.conf))
+    console.log(chalk.green('开始编译'), this.appPath, JSON.stringify(this.conf))
+
     // 1、生成编译目录
     await this.mkdirBuild()
     // 2、拷贝www路径到模板下
@@ -40,14 +46,16 @@ export default class Build {
    * 生成编译目录
    */
   private async mkdirBuild() {
-    console.log('准备编译目录')
+    console.log(chalk.green('准备编译目录'))
     const appPath = this.appPath
     const { adapter, debug } = this.conf
 
     // 定义编译目录
     this.buildDir = `${appPath}/.build-${adapter}-${this.targetName}${debug ? '-Debug' : ''}`
-
-    await fs.emptyDir(this.buildDir)
+    if (!fs.pathExists(this.buildDir)) {
+      await fs.mkdirs(this.buildDir)
+    }
+    // await fs.emptyDir(this.buildDir)
     shelljs.cd(this.buildDir)
 
     console.info('已创建编译目录：', this.buildDir)
@@ -58,7 +66,7 @@ export default class Build {
    * @param appPath
    */
   private async copywww(appPath: string = this.appPath) {
-    console.log('准备拷贝www目录')
+    console.log(chalk.green('准备拷贝www目录'))
     // const projectName = getProjectName(appPath)
     const wwwPath = path.join(appPath, config.SOURCE_DIR)
 
@@ -79,7 +87,7 @@ export default class Build {
    * 执行构建脚本
    */
   private async executeShell() {
-    console.log('准备执行编译指令')
+    console.log(chalk.green('准备执行编译指令'))
     // kchroot qmake
     this.execKchroot(this.qmakeCommand())
     // kchroot make
@@ -92,16 +100,18 @@ export default class Build {
    * 安装sop包
    */
   private async installSop() {
-    console.log('开始安装sop包...')
+    console.log(chalk.green('开始安装sop包...'))
     const { adapter } = this.conf
     let ip: string
     let port: number
+    let useSimulator: boolean = false
     if (DEVICES_TYPES.DEVICE === adapter) {
       ip = '192.168.100.100'
       port = 22
     } else if (DEVICES_TYPES.SIMULATOR === adapter) {
       ip = 'localhost'
       port = 5555
+      useSimulator = true;
     } else {
       throw new Error('adapter类型错误')
     }
@@ -109,22 +119,27 @@ export default class Build {
     const { stdout } = shelljs.exec("ls --file-type *.sop |awk '{print i$0}' i=`pwd`'/'")
     const sopPath = stdout.trim()
 
+    // 启动虚拟机
+    if (useSimulator) {
+      await this.startvm()
+    }
     // 发送
     this.sendSop(ip, port, sopPath)
     // 安装
     this.sshInstallSop(ip, port, path.basename(sopPath))
     // 启动
     this.sshStartApp(ip, port)
+
   }
 
 
   private sendSop(ip: string, port: number, sopPath: string) {
-    console.log('准备发送sop包', ip, port, sopPath)
+    console.log(chalk.green('准备发送sop包'), ip, port.toString(), sopPath)
     shelljs.exec(`expect ${this.locateScripts('scp-sop.sh')} ${ip} ${port} ${sopPath}`)
   }
 
   private sshInstallSop(ip: string, port: number, filename: string) {
-    console.log('准备安装sop包', filename)
+    console.log(chalk.green('准备安装sop包'), filename)
     const nameSplit = filename.split('-')
     shelljs.exec(`expect ${this.locateScripts('ssh-install-sop.sh')} ${ip} ${port} ${nameSplit[0]} ${filename}`)
   }
@@ -132,8 +147,27 @@ export default class Build {
   private sshStartApp(ip: string, port: number) {
     const { sopid, projectName } = this.conf
 
-    console.log('准备启动app', sopid + ':' + projectName + ':uiapp')
+    console.log(chalk.green('准备启动app'), sopid + ':' + projectName + ':uiapp')
     shelljs.exec(`expect ${this.locateScripts('ssh-start-app.sh')} ${ip} ${port} ${sopid} ${projectName}`)
+  }
+
+
+  private async startvm() {
+
+    const emulatorDir = path.join(this.sdkRootPath, 'emulator')
+
+    console.log(chalk.green('准备启动模拟器'), emulatorDir)
+
+    const pid = shelljs.exec('pgrep "emulator-x86"')
+    if (pid.trim()) {
+      console.log(chalk.blue(`模拟器正在运行[pid=${pid.trim()}]`))
+      return
+    }
+
+    const result = shelljs.exec(`${this.locateScripts('startvm.sh')} ${emulatorDir}`)
+    if (result.code === 1) {
+      await sleep(2000)
+    }
   }
 
 
@@ -187,13 +221,21 @@ export default class Build {
    * 查找PDK路径
    */
   private pdkPath() {
+    return this.homeSubPath('Syberos-Pdk')
+  }
+
+  private sdkPath() {
+    return this.homeSubPath('SyberOS-SDK')
+  }
+
+  private homeSubPath(subDir: string) {
     const { stdout } = shelljs.exec(`env | grep ^HOME= | cut -c 6-`)
-    const pdkPath = path.join(stdout.trim(), 'Syberos-Pdk')
-    const existe = fs.pathExists(pdkPath)
+    const subDirPath = path.join(stdout.trim(), subDir)
+    const existe = fs.pathExists(subDirPath)
     if (!existe) {
-      throw new Error('根目录下未找到Sberos-Pdk目录')
+      throw new Error(`根目录下未找到${subDir}目录`)
     }
-    return pdkPath
+    return subDirPath
   }
 
   /**

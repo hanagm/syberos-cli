@@ -46,3 +46,15 @@ export const getTargetName = (appPath: string, adapter: DEVICES_TYPES) => {
 
   throw new Error(`${PROJECT_CONFIG} 配置文件未找到`)
 }
+
+export const sleep = (ms: number) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        resolve(1)
+      } catch (e) {
+        reject(e)
+      }
+    }, ms)
+  })
+}
