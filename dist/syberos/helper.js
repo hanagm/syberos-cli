@@ -1,10 +1,19 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs-extra");
 const path = require("path");
 const constants_1 = require("../util/constants");
 const index_1 = require("../util/index");
 const shelljs = require("shelljs");
+const chalk_1 = require("chalk");
 /**
  *  读取project.config.json配置文件
  * @param appPath
@@ -82,3 +91,21 @@ exports.homeSubPath = (...subDirs) => {
 exports.locateScripts = (shFilename) => {
     return path.join(index_1.getRootPath(), 'scripts', shFilename);
 };
+/**
+ * 启动模拟器
+ * @param port  模拟器ssh端口，默认5555
+ */
+exports.startvm = (port = 5555) => __awaiter(this, void 0, void 0, function* () {
+    const emulatorPath = exports.homeSubPath('SyberOS-SDK', 'emulator');
+    console.log(`模拟器<${port}>：${emulatorPath}`);
+    const pid = shelljs.exec('pgrep "emulator-x86"');
+    if (pid.trim()) {
+        console.log(chalk_1.default.blue(`模拟器正在运行[pid=${pid.trim()}]`));
+        return;
+    }
+    const result = shelljs.exec(`${exports.locateScripts('startvm.sh')} ${emulatorPath} ${port ? port : ''}`);
+    if (result.code === 1) {
+        yield exports.sleep(2000);
+        console.log(chalk_1.default.blue(`模拟器已启动[pid=${shelljs.exec('pgrep "emulator-x86"').trim()}]`));
+    }
+});

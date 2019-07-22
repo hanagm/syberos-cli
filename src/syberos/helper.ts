@@ -3,6 +3,7 @@ import * as path from 'path'
 import { PROJECT_CONFIG, DEVICES_TYPES } from '../util/constants'
 import { getRootPath } from '../util/index'
 import * as shelljs from 'shelljs'
+import chalk from 'chalk'
 
 /**
  *  读取project.config.json配置文件
@@ -86,4 +87,25 @@ export const homeSubPath = (...subDirs: string[]): string => {
  */
 export const locateScripts = (shFilename: string): string => {
   return path.join(getRootPath(), 'scripts', shFilename)
+}
+
+/**
+ * 启动模拟器
+ * @param port  模拟器ssh端口，默认5555
+ */
+export const startvm = async (port: number | string = 5555) => {
+  const emulatorPath = homeSubPath('SyberOS-SDK', 'emulator')
+  console.log(`模拟器<${port}>：${emulatorPath}`)
+
+  const pid = shelljs.exec('pgrep "emulator-x86"')
+  if (pid.trim()) {
+    console.log(chalk.blue(`模拟器正在运行[pid=${pid.trim()}]`))
+    return
+  }
+
+  const result = shelljs.exec(`${locateScripts('startvm.sh')} ${emulatorPath} ${port ? port : ''}`)
+  if (result.code === 1) {
+    await sleep(2000)
+    console.log(chalk.blue(`模拟器已启动[pid=${shelljs.exec('pgrep "emulator-x86"').trim()}]`))
+  }
 }

@@ -120,7 +120,8 @@ class Build {
             const sopPath = stdout.trim();
             // 启动虚拟机
             if (useSimulator) {
-                yield this.startvm();
+                console.log(chalk_1.default.green('准备启动模拟器'));
+                yield helper.startvm();
             }
             // 发送
             this.sendSop(ip, port, sopPath);
@@ -143,22 +144,6 @@ class Build {
         const { sopid, projectName } = this.conf;
         console.log(chalk_1.default.green('准备启动app'), sopid + ':' + projectName + ':uiapp');
         shelljs.exec(`expect ${helper.locateScripts('ssh-start-app.sh')} ${ip} ${port} ${sopid} ${projectName}`);
-    }
-    startvm() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const emulatorDir = path.join(this.sdkRootPath, 'emulator');
-            console.log(chalk_1.default.green('准备启动模拟器'), emulatorDir);
-            const pid = shelljs.exec('pgrep "emulator-x86"');
-            if (pid.trim()) {
-                console.log(chalk_1.default.blue(`模拟器正在运行[pid=${pid.trim()}]`));
-                return;
-            }
-            const result = shelljs.exec(`${helper.locateScripts('startvm.sh')} ${emulatorDir}`);
-            if (result.code === 1) {
-                yield helper.sleep(2000);
-                console.log(chalk_1.default.blue(`模拟器已启动[pid=${shelljs.exec('pgrep "emulator-x86"').trim()}]`));
-            }
-        });
     }
     execKchroot(subCommand = '') {
         const { adapter } = this.conf;

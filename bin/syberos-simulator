@@ -8,21 +8,6 @@ program
   .option('-p, --port [port]', '模拟器ssh端口，默认使用端口5555')
   .parse(process.argv)
 
-const { port } = program
 
 console.log(chalk.green(`准备启动模拟器`))
-
-const emulatorPath = helper.homeSubPath('SyberOS-SDK', 'emulator')
-
-
-const pid = shelljs.exec('pgrep "emulator-x86"')
-if (pid.trim()) {
-  console.log(chalk.blue(`模拟器正在运行[pid=${pid.trim()}]`))
-  return
-}
-
-const result = shelljs.exec(`${helper.locateScripts('startvm.sh')} ${emulatorPath} ${port ? program.port : ''}`)
-if (result.code === 1) {
-  console.log(chalk.blue(`模拟器已启动[pid=${shelljs.exec('pgrep "emulator-x86"').trim()}]`))
-}
-
+helper.startvm(program.port)
