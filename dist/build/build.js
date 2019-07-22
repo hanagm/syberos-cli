@@ -20,7 +20,6 @@ class Build {
         this.appPath = appPath;
         this.conf = Object.assign({}, this.conf, config);
         this.pdkRootPath = this.pdkPath();
-        this.sdkRootPath = this.sdkPath();
         this.targetName = helper.getTargetName(this.appPath, this.conf.adapter);
     }
     /**
@@ -187,9 +186,6 @@ class Build {
      */
     pdkPath() {
         return helper.homeSubPath('Syberos-Pdk');
-    }
-    sdkPath() {
-        return helper.homeSubPath('SyberOS-SDK');
     }
     /**
      * 查找kchroot路径

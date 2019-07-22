@@ -11,8 +11,6 @@ export default class Build {
   private appPath: string
   // pdk根路径
   private pdkRootPath: string
-  // sdk根路径
-  private sdkRootPath: string
   private targetName: string
   // 定义编译目录
   private buildDir: string
@@ -21,7 +19,6 @@ export default class Build {
     this.appPath = appPath
     this.conf = { ...this.conf, ...config }
     this.pdkRootPath = this.pdkPath()
-    this.sdkRootPath = this.sdkPath()
     this.targetName = helper.getTargetName(this.appPath, this.conf.adapter)
   }
 
@@ -202,10 +199,6 @@ export default class Build {
    */
   private pdkPath() {
     return helper.homeSubPath('Syberos-Pdk')
-  }
-
-  private sdkPath() {
-    return helper.homeSubPath('SyberOS-SDK')
   }
 
   /**
