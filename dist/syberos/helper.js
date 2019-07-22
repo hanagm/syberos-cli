@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs-extra");
 const path = require("path");
 const constants_1 = require("../util/constants");
+const index_1 = require("../util/index");
+const shelljs = require("shelljs");
 /**
  *  读取project.config.json配置文件
  * @param appPath
@@ -44,6 +46,10 @@ exports.getTargetName = (appPath, adapter) => {
     }
     throw new Error(`${constants_1.PROJECT_CONFIG} 配置文件未找到`);
 };
+/**
+ * 主进程休眠
+ * @param ms 休眠时长（毫秒）
+ */
 exports.sleep = (ms) => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -55,4 +61,24 @@ exports.sleep = (ms) => {
             }
         }, ms);
     });
+};
+/**
+ * 获取当前用户home目录下的子目录的路径
+ * @param subDirs home目录下的子目录名
+ */
+exports.homeSubPath = (...subDirs) => {
+    const { stdout } = shelljs.exec(`env | grep ^HOME= | cut -c 6-`);
+    const subDirPath = path.join(stdout.trim(), ...subDirs);
+    const existe = fs.pathExists(subDirPath);
+    if (!existe) {
+        throw new Error(`根目录下未找到${path.join(...subDirs)}目录`);
+    }
+    return subDirPath;
+};
+/**
+ * 查找sh脚本路径
+ * @param shFilename sh脚本文件吗
+ */
+exports.locateScripts = (shFilename) => {
+    return path.join(index_1.getRootPath(), 'scripts', shFilename);
 };

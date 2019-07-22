@@ -3,9 +3,8 @@ import * as path from 'path'
 import * as shelljs from 'shelljs'
 import chalk from 'chalk'
 import { AppBuildConfig, DEVICES_TYPES } from '../util/constants'
-import { getTargetName, sleep } from '../syberos/helper'
+import * as helper from '../syberos/helper'
 import config from '../config/index'
-import { getRootPath } from '../util/index'
 
 export default class Build {
   private conf: any = {}
@@ -23,7 +22,7 @@ export default class Build {
     this.conf = { ...this.conf, ...config }
     this.pdkRootPath = this.pdkPath()
     this.sdkRootPath = this.sdkPath()
-    this.targetName = getTargetName(this.appPath, this.conf.adapter)
+    this.targetName = helper.getTargetName(this.appPath, this.conf.adapter)
   }
 
   /**
@@ -135,20 +134,20 @@ export default class Build {
 
   private sendSop(ip: string, port: number, sopPath: string) {
     console.log(chalk.green('准备发送sop包'), ip, port.toString(), sopPath)
-    shelljs.exec(`expect ${this.locateScripts('scp-sop.sh')} ${ip} ${port} ${sopPath}`)
+    shelljs.exec(`expect ${helper.locateScripts('scp-sop.sh')} ${ip} ${port} ${sopPath}`)
   }
 
   private sshInstallSop(ip: string, port: number, filename: string) {
     console.log(chalk.green('准备安装sop包'), filename)
     const nameSplit = filename.split('-')
-    shelljs.exec(`expect ${this.locateScripts('ssh-install-sop.sh')} ${ip} ${port} ${nameSplit[0]} ${filename}`)
+    shelljs.exec(`expect ${helper.locateScripts('ssh-install-sop.sh')} ${ip} ${port} ${nameSplit[0]} ${filename}`)
   }
 
   private sshStartApp(ip: string, port: number) {
     const { sopid, projectName } = this.conf
 
     console.log(chalk.green('准备启动app'), sopid + ':' + projectName + ':uiapp')
-    shelljs.exec(`expect ${this.locateScripts('ssh-start-app.sh')} ${ip} ${port} ${sopid} ${projectName}`)
+    shelljs.exec(`expect ${helper.locateScripts('ssh-start-app.sh')} ${ip} ${port} ${sopid} ${projectName}`)
   }
 
 
@@ -164,9 +163,10 @@ export default class Build {
       return
     }
 
-    const result = shelljs.exec(`${this.locateScripts('startvm.sh')} ${emulatorDir}`)
+    const result = shelljs.exec(`${helper.locateScripts('startvm.sh')} ${emulatorDir}`)
     if (result.code === 1) {
-      await sleep(2000)
+      await helper.sleep(2000)
+      console.log(chalk.blue(`模拟器已启动[pid=${shelljs.exec('pgrep "emulator-x86"').trim()}]`))
     }
   }
 
@@ -221,21 +221,11 @@ export default class Build {
    * 查找PDK路径
    */
   private pdkPath() {
-    return this.homeSubPath('Syberos-Pdk')
+    return helper.homeSubPath('Syberos-Pdk')
   }
 
   private sdkPath() {
-    return this.homeSubPath('SyberOS-SDK')
-  }
-
-  private homeSubPath(subDir: string) {
-    const { stdout } = shelljs.exec(`env | grep ^HOME= | cut -c 6-`)
-    const subDirPath = path.join(stdout.trim(), subDir)
-    const existe = fs.pathExists(subDirPath)
-    if (!existe) {
-      throw new Error(`根目录下未找到${subDir}目录`)
-    }
-    return subDirPath
+    return helper.homeSubPath('SyberOS-SDK')
   }
 
   /**
@@ -255,12 +245,5 @@ export default class Build {
    */
   private locateSyberosPro(): string {
     return path.join(this.appPath, 'platforms', 'syberos', 'syberos.pro')
-  }
-  /**
-   * 查找sh脚本路径
-   * @param shFilename sh脚本文件吗
-   */
-  private locateScripts(shFilename: string): string {
-    return path.join(getRootPath(), 'scripts', shFilename)
   }
 }
