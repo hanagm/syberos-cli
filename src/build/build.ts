@@ -29,7 +29,7 @@ export default class Build {
     console.log(chalk.green('开始编译'), this.appPath, JSON.stringify(this.conf))
 
     // 1、生成编译目录
-    await this.mkdirBuild()
+    this.mkdirBuild()
     // 2、拷贝www路径到模板下
     await this.copywww()
     // 3、执行构建命令
@@ -41,17 +41,16 @@ export default class Build {
   /**
    * 生成编译目录
    */
-  private async mkdirBuild() {
+  private mkdirBuild() {
     console.log(chalk.green('准备编译目录'))
     const appPath = this.appPath
     const { adapter, debug } = this.conf
 
     // 定义编译目录
     this.buildDir = `${appPath}/.build-${adapter}-${this.targetName}${debug ? '-Debug' : ''}`
-    if (!fs.pathExists(this.buildDir)) {
-      await fs.mkdirs(this.buildDir)
+    if (!fs.pathExistsSync(this.buildDir)) {
+      fs.mkdirsSync(this.buildDir)
     }
-    // await fs.emptyDir(this.buildDir)
     shelljs.cd(this.buildDir)
 
     console.info('已创建编译目录：', this.buildDir)
