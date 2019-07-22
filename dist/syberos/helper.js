@@ -108,4 +108,7 @@ exports.startvm = (port = 5555) => __awaiter(this, void 0, void 0, function* () 
         yield exports.sleep(2000);
         console.log(chalk_1.default.blue(`模拟器已启动[pid=${shelljs.exec('pgrep "emulator-x86"').trim()}]`));
     }
+    else if (result.code === 2) {
+        console.log(chalk_1.default.red('启动模拟器失败'));
+    }
 });

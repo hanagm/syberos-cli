@@ -107,5 +107,7 @@ export const startvm = async (port: number | string = 5555) => {
   if (result.code === 1) {
     await sleep(2000)
     console.log(chalk.blue(`模拟器已启动[pid=${shelljs.exec('pgrep "emulator-x86"').trim()}]`))
+  } else if (result.code === 2) {
+    console.log(chalk.red('启动模拟器失败'))
   }
 }
