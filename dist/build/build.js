@@ -169,7 +169,8 @@ class Build {
         const qmake = this.locateQmake();
         const syberosPro = this.locateSyberosPro();
         const qmakeConfig = debug ? 'qml_debug' : 'release';
-        return `${qmake} ${syberosPro} -r -spec linux-g++ CONFIG+=${qmakeConfig}`;
+        const exConfig = Buffer.from(JSON.stringify(this.conf), 'utf8').toString('hex');
+        return `${qmake} ${syberosPro} -r -spec linux-g++ CONFIG+=${qmakeConfig} EX_CONFIG=${exConfig}`;
     }
     makeCommand() {
         return '/usr/bin/make';

@@ -181,7 +181,8 @@ export default class Build {
 
     const qmakeConfig = debug ? 'qml_debug' : 'release'
 
-    return `${qmake} ${syberosPro} -r -spec linux-g++ CONFIG+=${qmakeConfig}`
+    const exConfig = Buffer.from(JSON.stringify(this.conf), 'utf8').toString('hex')
+    return `${qmake} ${syberosPro} -r -spec linux-g++ CONFIG+=${qmakeConfig} EX_CONFIG=${exConfig}`
   }
 
   private makeCommand() {
